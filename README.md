@@ -2,7 +2,7 @@
 
 # maps to the stars
 
-**The sky above a place, at a moment that matters to you.**
+**The sky, through time.**
 
 Explore eight bright stars and the Moon from 1900 to 2100. Real astronomical calculations, historical time zones, and a quiet interface—all in your browser.
 
@@ -19,7 +19,7 @@ Explore eight bright stars and the Moon from 1900 to 2100. Real astronomical cal
 
 ## A short tour
 
-https://github.com/user-attachments/assets/0de72e21-ad57-4f6b-986e-ce7912b2d73d
+https://github.com/user-attachments/assets/9d3807ea-616a-41bf-82ae-90a45738bb18
 
 [Download the walkthrough](docs/demo/walkthrough.mp4). A real browser recording, under one minute, showing date changes, a rise jump, trails, light-travel years, starter skies and card export. [Recording instructions](docs/demo/README.md).
 

@@ -335,13 +335,16 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="site-header">
-        <a
-          className="wordmark"
-          href={window.location.pathname}
-          aria-label="maps to the stars home"
-        >
-          maps to the stars
-        </a>
+        <div className="brand">
+          <a
+            className="wordmark"
+            href={window.location.pathname}
+            aria-label="maps to the stars home"
+          >
+            maps to the stars
+          </a>
+          <p className="brand-tagline">The sky, through time.</p>
+        </div>
         <div className="header-actions">
           <button
             className="moments-nav"

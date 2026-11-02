@@ -106,7 +106,10 @@ export function renderSkyCard(
         >
           maps to the stars
         </text>
-        <path d="M60 104H740 M60 1002H740" stroke="#ffffff25" strokeWidth="1" />
+        <text x="60" y="97" fill="#9cabbc" fontSize="11">
+          The sky, through time.
+        </text>
+        <path d="M60 114H740 M60 1002H740" stroke="#ffffff25" strokeWidth="1" />
         <text x="740" y="75" textAnchor="end" fill="#9cabbc" fontSize="12">
           {solar.label}
         </text>

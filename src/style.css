@@ -87,6 +87,14 @@ input[type="time"] {
   letter-spacing: -0.4px;
   text-decoration: none;
   color: #e2e4e4;
+  line-height: 1;
+}
+.brand-tagline {
+  margin: 6px 0 0;
+  font-size: 10px;
+  line-height: 1.2;
+  color: #9ca9ba;
+  letter-spacing: 0.15px;
 }
 .header-actions {
   display: flex;
