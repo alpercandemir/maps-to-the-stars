@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT } from "./state";
+import { DEFAULT_PLACE } from "./state";
 import {
   MOMENTS_KEY,
   MOMENT_LIMIT,
@@ -9,9 +9,8 @@ import {
 } from "./moments";
 
 const moment: SavedMoment = {
-  ...DEFAULT,
-  place: { ...DEFAULT.place, lat: 40.99091234 },
-  ms: DEFAULT.ms + 123,
+  place: { ...DEFAULT_PLACE, lat: 41.00821234 },
+  ms: Date.parse("1998-07-15T20:30:00Z") + 123,
   id: "test",
   title: "A night to remember",
   trails: true,

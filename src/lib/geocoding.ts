@@ -7,6 +7,46 @@ export const geocodingEnabled = Boolean(
 export type FoundPlace = Omit<Place, "zone"> & { zone?: string };
 const cache = new Map<string, { at: number; places: FoundPlace[] }>();
 
+// IP lookup returns an approximate city; use the browser's zone for the clock.
+export function parseIPPlace(data: unknown): Omit<Place, "zone"> | undefined {
+  const p = data as {
+    city?: { name?: unknown };
+    country?: { name?: unknown };
+    location?: { latitude?: unknown; longitude?: unknown };
+  } | null;
+  const label = p?.city?.name;
+  const lat = p?.location?.latitude;
+  const lon = p?.location?.longitude;
+  if (
+    typeof label !== "string" ||
+    !label.trim() ||
+    typeof lat !== "number" ||
+    typeof lon !== "number" ||
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lon) ||
+    Math.abs(lat) > 90 ||
+    Math.abs(lon) > 180
+  )
+    return undefined;
+  return {
+    label: label.trim().slice(0, 100),
+    country:
+      typeof p?.country?.name === "string" ? p.country.name.slice(0, 100) : "",
+    lat,
+    lon,
+  };
+}
+
+export async function placeFromIP(signal: AbortSignal) {
+  const key = import.meta.env.VITE_GEOAPIFY_API_KEY?.trim();
+  if (!key) return undefined;
+  const url = new URL("https://api.geoapify.com/v1/ipinfo");
+  url.searchParams.set("apiKey", key);
+  const response = await fetch(url, { signal, credentials: "omit" });
+  if (!response.ok) throw new Error("Approximate location is unavailable.");
+  return parseIPPlace(await response.json());
+}
+
 export function parsePlaces(data: unknown): FoundPlace[] {
   const results = (data as { results?: unknown[] } | null)?.results;
   if (!Array.isArray(results))

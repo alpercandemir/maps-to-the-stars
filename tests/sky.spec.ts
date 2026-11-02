@@ -1,10 +1,61 @@
 import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
+const summerSky =
+  "/?lat=41.0082&lon=28.9784&tz=Europe%2FIstanbul&place=Istanbul&at=1998-07-15T20%3A30%3A00.000Z";
+
+test.beforeEach(async ({ page }) => {
+  await page.route("https://api.geoapify.com/v1/ipinfo?**", (route) =>
+    route.abort(),
+  );
+});
+
+test.describe("local defaults", () => {
+  test.use({ timezoneId: "America/Los_Angeles" });
+
+  test("opens Istanbul at now in the browser's time zone, including the local date", async ({
+    page,
+  }) => {
+    await page.clock.setFixedTime(new Date("2026-11-02T01:30:00Z"));
+    await page.goto("/");
+    await expect(page.locator(".place-control strong")).toHaveText("Istanbul");
+    await expect(page.getByLabel("Local date", { exact: true })).toHaveValue(
+      "2026-11-01",
+    );
+    await expect(page.getByLabel("Local time", { exact: true })).toHaveValue(
+      "17:30",
+    );
+    await expect(page.locator(".zone-note")).toContainText(
+      "America/Los_Angeles",
+    );
+    await expect(page).toHaveURL(/at=2026-11-02T01%3A30%3A00.000Z/);
+
+    await page.clock.setFixedTime(new Date("2026-11-03T18:45:00Z"));
+    await page.goto("/");
+    await expect(page.getByLabel("Local date", { exact: true })).toHaveValue(
+      "2026-11-03",
+    );
+    await expect(page.getByLabel("Local time", { exact: true })).toHaveValue(
+      "10:45",
+    );
+  });
+
+  test("a shared sky retains its instant and time zone", async ({ page }) => {
+    await page.goto(summerSky);
+    await expect(page.getByLabel("Local date", { exact: true })).toHaveValue(
+      "1998-07-15",
+    );
+    await expect(page.getByLabel("Local time", { exact: true })).toHaveValue(
+      "23:30",
+    );
+    await expect(page.locator(".zone-note")).toContainText("Europe/Istanbul");
+  });
+});
+
 test("date and time changes automatically update the sky and share URL", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto(summerSky);
   await expect(page.getByRole("button", { name: "Update sky" })).toHaveCount(0);
   await page.getByLabel("Local date", { exact: true }).fill("2026-01-15");
   await expect(page).toHaveURL(/at=2026-01-15T20%3A30/);
@@ -21,7 +72,7 @@ test("date and time changes automatically update the sky and share URL", async (
 test("a rise jump makes a previously hidden Sirius visible", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto(summerSky);
   await page.getByRole("button", { name: "Objects", exact: true }).click();
   await page
     .getByRole("dialog")
@@ -56,7 +107,7 @@ test("automatic edits preserve DST gap rejection and overlap choice", async ({
 test("nearby starlight uses the displayed year and preserves selection on exploration", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto(summerSky);
   await page.getByRole("button", { name: /^Vega, altitude/ }).click();
   await expect(page.locator(".light-travel")).toContainText("around 1973");
   await page.getByRole("button", { name: "Explore 1973", exact: true }).click();
