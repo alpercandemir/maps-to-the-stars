@@ -562,6 +562,20 @@ input[type="time"] {
   color: #7f8ea2;
   line-height: 1.7;
 }
+.light-travel {
+  margin: 14px 0 0;
+  font-size: 10px;
+  line-height: 1.8;
+  color: #9daabb;
+}
+.light-travel strong {
+  color: #c7d1dd;
+  font-weight: 400;
+}
+.light-travel .event-jump {
+  margin-left: 0;
+  display: block;
+}
 .object-notes summary {
   cursor: pointer;
 }
@@ -1489,13 +1503,9 @@ dialog::backdrop {
   .now-actions {
     font-size: 11px;
   }
-  .journey-controls form {
-    position: relative;
-  }
   .date-time-fields {
     grid-template-columns: 1.3fr 1fr;
     gap: 10px;
-    padding-right: 45px;
   }
   .date-time-fields label > span {
     display: none;
@@ -1507,17 +1517,6 @@ dialog::backdrop {
   }
   .date-time-fields input::-webkit-calendar-picker-indicator {
     font-size: 11px;
-  }
-  .journey-controls .primary-button {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 35px;
-    height: 36px;
-    min-height: 0;
-    font-size: 0;
-    padding: 9px;
-    gap: 0;
   }
   .zone-note {
     margin: 10px 0 0;

@@ -126,11 +126,12 @@ export function events(body: Body, ms: number, place: Place): Events {
         const rising = afterAlt > beforeAlt;
         while (high - low > 500) {
           const mid = (low + high) / 2;
-          if (position(body, mid, place).altitude > 0 === rising) high = mid;
+          if (position(body, mid, place).altitude >= 0 === rising) high = mid;
           else low = mid;
         }
-        if (rising && !result.rise) result.rise = Math.round((low + high) / 2);
-        if (!rising && !result.set) result.set = Math.round((low + high) / 2);
+        // Land after the crossing so the map agrees with the event we jumped to.
+        if (rising && !result.rise) result.rise = Math.ceil(high);
+        if (!rising && !result.set) result.set = Math.ceil(high);
         if (result.rise && result.set) break;
       }
       before = after;

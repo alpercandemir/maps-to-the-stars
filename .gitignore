@@ -5,3 +5,5 @@ dist/
 coverage/
 *.tsbuildinfo
 .artifacts/
+playwright-report/
+test-results/

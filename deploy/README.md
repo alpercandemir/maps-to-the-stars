@@ -18,6 +18,62 @@ flowchart LR
 | `Caddyfile`      | Inner static server: compression, caching headers, `/healthz`           |
 | `edge.Caddyfile` | Site block appended to the shared proxy's Caddyfile                     |
 | `activate.sh`    | Validates, starts the container, safely merges and reloads proxy config |
+| `ship.sh`        | Sends the exact CI archive over SSH and verifies HTTPS health           |
+| `receive.sh`     | Locks server activation and unpacks a unique release                    |
+
+## GitHub Actions
+
+The [CI workflow](../.github/workflows/ci.yml) checks pull requests and main
+pushes with Node 24, unit tests, a type-checked production build, desktop/mobile
+Playwright checks, shell syntax, Compose interpolation and Caddy validation.
+Build archives are retained for 14 days; browser failure reports for 7 days.
+
+Production deployment uses the exact archive from the successful build. It runs
+only for main pushes or manual runs from main, with `DEPLOY_ENABLED=true`.
+Pull requests have no deployment credentials. Jobs serialize deployment, and
+an automatic run skips itself if a newer main commit exists. SSH host keys are
+pinned; no `ssh-keyscan` or disabled host-key checks are used.
+
+Set these **repository variables** under Settings → Secrets and variables → Actions:
+
+| Variable            | Current deployment                                       |
+| ------------------- | -------------------------------------------------------- |
+| `DEPLOY_ENABLED`    | `true` to enable deployment after successful main builds |
+| `STARS_DEPLOY_HOST` | `138.2.168.194`                                          |
+| `STARS_DEPLOY_USER` | `ubuntu`                                                 |
+| `STARS_KNOWN_HOSTS` | Verified OpenSSH known-hosts line for the server         |
+
+Add `ORACLE_SSH_KEY` as a **production environment secret**, containing the
+deployment user's existing private SSH key. The workflow writes it to a
+temporary directory for the job and removes that directory on exit. Never
+commit keys or print them in workflow logs. The deployment user needs the same
+noninteractive Docker/sudo access used by `activate.sh`.
+
+The server's `~/.mapstothestars.env` must contain the `STARS_*` settings below.
+The current instance uses:
+
+```sh
+STARS_APP_DIR=/home/ubuntu/mapstothestars
+STARS_HOSTNAME=tothestars.138.2.168.194.sslip.io
+STARS_PROXY_CADDYFILE=/home/ubuntu/rparadise-tracker/Caddyfile
+STARS_PROXY_CONTAINER=rparadise-tracker-caddy-1
+STARS_PROXY_NETWORK=rparadise-tracker_default
+```
+
+Keep this file readable only by the deployment user (`chmod 600`). Configuration
+is sourced on the server; the private key is never sent to the server by CI.
+The production environment URL and public health-check URL live in the workflow;
+update both if moving the site to another hostname.
+
+To redeploy or roll back through Actions, choose **CI → Run workflow → main**
+and enter a full 40-character main-branch commit SHA. Leave it blank for the
+current main commit. The selected revision must include the CI/browser/deploy
+scripts; pre-CI releases can still be restored with the server command below.
+Manual runs rebuild and validate the selected revision before activating it.
+The live `current` symlink advances only after application, proxy and HTTPS
+checks succeed. A failed activation restores the previous application release.
+Previous release directories are retained for rollback; prune old uploads and
+releases manually when they are no longer needed.
 
 ## Container profile
 
@@ -75,6 +131,10 @@ curl -fsS https://stars.example.com/healthz   # → ok
 5. Validates the combined config inside the proxy container, then gracefully reloads it.
    If the reload fails, the previous config is restored and reloaded.
 6. Points `$STARS_APP_DIR/current` at the new release.
+
+Before advancing `current`, the helper also checks the public HTTPS `/healthz`.
+If activation fails after starting the new app, it attempts to restore the
+previous release's container. Inspect the logged error if restoration also fails.
 
 The proxy is reloaded from a staged copy inside its container, and the host
 Caddyfile is rewritten in place (preserving its inode) so read-only bind mounts
