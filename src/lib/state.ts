@@ -4,17 +4,24 @@ export interface Moment {
   place: Place;
   ms: number;
 }
-export const DEFAULT: Moment = {
-  place: CITIES[0],
-  ms: Date.parse("1998-07-15T20:30:00Z"),
-};
+export const DEFAULT_PLACE = CITIES[0];
+export function defaultMoment(): Moment {
+  return {
+    place: {
+      ...DEFAULT_PLACE,
+      zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    },
+    ms: Date.now(),
+  };
+}
 export function readMoment(search: string): {
   moment: Moment;
+  isDefault: boolean;
   warning?: string;
 } {
   const p = new URLSearchParams(search);
   if (!["lat", "lon", "tz", "at", "place"].some((key) => p.has(key)))
-    return { moment: DEFAULT };
+    return { moment: defaultMoment(), isDefault: true };
   const lat = Number(p.get("lat")),
     lon = Number(p.get("lon")),
     zone = p.get("tz") || "";
@@ -33,7 +40,8 @@ export function readMoment(search: string): {
     new Date(ms).toISOString().slice(0, 19) !== at.slice(0, 19)
   ) {
     return {
-      moment: DEFAULT,
+      moment: defaultMoment(),
+      isDefault: true,
       warning:
         "This link contains an invalid moment. Showing our default Istanbul sky.",
     };
@@ -42,6 +50,7 @@ export function readMoment(search: string): {
     (city) => city.lat === lat && city.lon === lon && city.zone === zone,
   );
   return {
+    isDefault: false,
     moment: {
       place: {
         lat,

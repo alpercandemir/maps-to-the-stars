@@ -50,7 +50,8 @@ import {
   zoned,
   type LocalResult,
 } from "./lib/time";
-import { DEFAULT, readMoment, shareURL } from "./lib/state";
+import { readMoment, shareURL } from "./lib/state";
+import { geocodingEnabled, placeFromIP } from "./lib/geocoding";
 import { createStarTrailSampler } from "./lib/trails";
 import { solarContext } from "./lib/daylight";
 import {
@@ -71,6 +72,10 @@ const HOUR = 3600_000;
 export default function App() {
   const [place, setPlace] = useState(initial.moment.place),
     [ms, setMs] = useState(initial.moment.ms);
+  const [locationSource, setLocationSource] = useState<
+    "default" | "approximate" | "selected"
+  >(initial.isDefault ? "default" : "selected");
+  const locationRequest = useRef<AbortController | null>(null);
   const [anchor, setAnchor] = useState(ms),
     [center, setCenter] = useState(ms);
   const [draft, setDraft] = useState(inputs(ms, place.zone));
@@ -118,14 +123,33 @@ export default function App() {
   const visible = objects.filter((o) => o.altitude >= 0);
   const visibleCount = visible.length;
   const local = zoned(ms, place.zone);
-  const isDefaultPlace =
-    place.lat === DEFAULT.place.lat && place.lon === DEFAULT.place.lon;
+  const isDefaultPlace = locationSource === "default";
   const url = shareURL({ place, ms }, window.location.href);
   const detailEvents = useMemo(
     () => (playing || !object ? undefined : events(object.body, ms, place)),
     [object?.body, ms, place, playing],
   );
 
+  useEffect(() => {
+    if (!initial.isDefault || initial.warning || !geocodingEnabled) return;
+    const controller = new AbortController();
+    locationRequest.current = controller;
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    void placeFromIP(controller.signal)
+      .then((found) => {
+        if (!found || controller.signal.aborted) return;
+        setPlace({ ...found, zone: initial.moment.place.zone });
+        setLocationSource("approximate");
+      })
+      .catch(() => {
+        // Istanbul remains available when the lookup fails or times out.
+      })
+      .finally(() => clearTimeout(timeout));
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
+  }, []);
   useEffect(() => {
     setDraft(inputs(ms, place.zone));
     return () => clearTimeout(dateEdit.current);
@@ -229,6 +253,8 @@ export default function App() {
       return;
     }
     setPlaying(false);
+    locationRequest.current?.abort();
+    setLocationSource("selected");
     setPlace(p);
     setModal(null);
     setNotice("");
@@ -286,6 +312,8 @@ export default function App() {
   function restoreMoment(moment: SavedMoment | StarterSky) {
     clearTimeout(dateEdit.current);
     setPlaying(false);
+    locationRequest.current?.abort();
+    setLocationSource("selected");
     setPlace({ ...moment.place });
     setMs(moment.ms);
     setAnchor(moment.ms);
@@ -332,6 +360,8 @@ export default function App() {
     }
   }
   const openModal = (value: typeof modal) => {
+    // Keep the location stable while choosing a place or saving/sharing a sky.
+    locationRequest.current?.abort();
     setPlaying(false);
     setModal(value);
     setCopied(false);
@@ -405,6 +435,18 @@ export default function App() {
                 <span> / </span>
                 {Math.abs(place.lon).toFixed(4)}° {place.lon >= 0 ? "E" : "W"}
               </div>
+              {locationSource === "approximate" && (
+                <p className="field-note location-estimate">
+                  Approximate location ·{" "}
+                  <a
+                    href="https://www.geoapify.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Geoapify
+                  </a>
+                </p>
+              )}
               <div className="control-heading moment-heading">
                 <h2>Date & time</h2>
                 <div className="now-actions">

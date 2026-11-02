@@ -43,28 +43,29 @@ describe("independent PyEphem/libastro comparison", () => {
   }
 });
 describe("geometric sky and events", () => {
-  it.each([CITIES[0], CITIES[10], CITIES[12]])(
-    "event jumps land on the post-crossing side in $label",
-    (place) => {
-      for (const body of [...STARS.map((star) => star.body), Body.Moon]) {
-        const result = events(body, example, place);
-        if (result.rise !== undefined) {
-          expect(
-            position(body, result.rise, place).altitude,
-          ).toBeGreaterThanOrEqual(0);
-          expect(
-            position(body, result.rise - 501, place).altitude,
-          ).toBeLessThan(0);
-        }
-        if (result.set !== undefined) {
-          expect(position(body, result.set, place).altitude).toBeLessThan(0);
-          expect(
-            position(body, result.set - 501, place).altitude,
-          ).toBeGreaterThanOrEqual(0);
-        }
+  it.each(
+    ["Istanbul", "Tokyo", "Cape Town"].map((label) =>
+      CITIES.find((city) => city.label === label)!,
+    ),
+  )("event jumps land on the post-crossing side in $label", (place) => {
+    for (const body of [...STARS.map((star) => star.body), Body.Moon]) {
+      const result = events(body, example, place);
+      if (result.rise !== undefined) {
+        expect(
+          position(body, result.rise, place).altitude,
+        ).toBeGreaterThanOrEqual(0);
+        expect(position(body, result.rise - 501, place).altitude).toBeLessThan(
+          0,
+        );
       }
-    },
-  );
+      if (result.set !== undefined) {
+        expect(position(body, result.set, place).altitude).toBeLessThan(0);
+        expect(
+          position(body, result.set - 501, place).altitude,
+        ).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
   it("Polaris circles close to geographic north, never rises/sets in Istanbul", () => {
     for (let h = 0; h < 24; h += 2) {
       const p = position(Body.Star1, example + h * 3600_000, istanbul);

@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { parsePlaces, searchPlaces } from "./geocoding";
+import {
+  parseIPPlace,
+  parsePlaces,
+  placeFromIP,
+  searchPlaces,
+} from "./geocoding";
 
 const tokyo = {
   formatted: "Shinjuku, Tokyo, Japan",
@@ -67,5 +72,69 @@ describe("place results", () => {
     const signal = new AbortController().signal;
     await expect(searchPlaces("quota test", signal)).rejects.toThrow("busy");
     expect(await searchPlaces("quota test", signal)).toHaveLength(1);
+  });
+});
+
+describe("approximate city detection", () => {
+  const result = {
+    city: { name: "Tokyo" },
+    country: { name: "Japan" },
+    location: { latitude: 35.69, longitude: 139.7 },
+  };
+  it("reads city coordinates without using the IP address or inferred time zone", () => {
+    expect(parseIPPlace(result)).toEqual({
+      label: "Tokyo",
+      country: "Japan",
+      lat: 35.69,
+      lon: 139.7,
+    });
+  });
+  it.each([
+    null,
+    {},
+    { ...result, city: null },
+    { ...result, city: { name: " " } },
+    { ...result, location: { latitude: 91, longitude: 0 } },
+    { ...result, location: { latitude: 0, longitude: -181 } },
+    { ...result, location: { latitude: NaN, longitude: 0 } },
+    { ...result, location: { latitude: 0, longitude: Infinity } },
+    { ...result, location: { latitude: "35.69", longitude: 139.7 } },
+  ])("ignores incomplete or invalid city results: %j", (value) => {
+    expect(parseIPPlace(value)).toBeUndefined();
+  });
+  it("makes no request without a configured key", async () => {
+    vi.stubEnv("VITE_GEOAPIFY_API_KEY", "");
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    expect(await placeFromIP(new AbortController().signal)).toBeUndefined();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+  it("uses the visitor's request IP and forwards cancellation", async () => {
+    vi.stubEnv("VITE_GEOAPIFY_API_KEY", "test-browser-key");
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(result)));
+    vi.stubGlobal("fetch", fetch);
+    const controller = new AbortController();
+    expect(await placeFromIP(controller.signal)).toMatchObject({
+      label: "Tokyo",
+    });
+    const url = new URL(String(fetch.mock.calls[0][0]));
+    expect(url.pathname).toBe("/v1/ipinfo");
+    expect(url.searchParams.has("ip")).toBe(false);
+    expect(fetch.mock.calls[0][1]).toEqual({
+      signal: controller.signal,
+      credentials: "omit",
+    });
+  });
+  it("rejects failed lookups so the app can retain Istanbul", async () => {
+    vi.stubEnv("VITE_GEOAPIFY_API_KEY", "test-browser-key");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response("", { status: 429 })),
+    );
+    await expect(placeFromIP(new AbortController().signal)).rejects.toThrow(
+      "unavailable",
+    );
   });
 });

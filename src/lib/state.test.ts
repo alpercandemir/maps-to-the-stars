@@ -1,7 +1,32 @@
-import { describe, expect, it } from "vitest";
-import { DEFAULT, readMoment, shareURL } from "./state";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { DEFAULT_PLACE, readMoment, shareURL } from "./state";
+
+const DEFAULT = {
+  place: DEFAULT_PLACE,
+  ms: Date.parse("2026-11-02T01:30:00Z"),
+};
+
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(DEFAULT.ms);
+});
+afterEach(() => vi.useRealTimers());
 
 describe("shareable moments", () => {
+  it("starts in Istanbul at the current instant in the user's time zone", () => {
+    const { moment, warning } = readMoment("");
+    expect(warning).toBeUndefined();
+    expect(moment).toEqual({
+      place: {
+        ...DEFAULT_PLACE,
+        label: "Istanbul",
+        zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      },
+      ms: Date.now(),
+    });
+    vi.setSystemTime(DEFAULT.ms + 60_000);
+    expect(readMoment("?unrelated=yes").moment.ms).toBe(Date.now());
+  });
   it("reproduces the instant, coordinates, label and IANA zone from URL alone", () => {
     const url = shareURL(DEFAULT, "https://example.com/sky?unrelated=yes#old");
     const { moment, warning } = readMoment(new URL(url).search);
@@ -39,6 +64,10 @@ describe("shareable moments", () => {
   ])("rejects corrupt state: %s", (search) => {
     const r = readMoment(search);
     expect(r.warning).toBeTruthy();
-    expect(r.moment).toEqual(DEFAULT);
+    expect(r.moment.ms).toBe(Date.now());
+    expect(r.moment.place.label).toBe("Istanbul");
+    expect(r.moment.place.zone).toBe(
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+    );
   });
 });

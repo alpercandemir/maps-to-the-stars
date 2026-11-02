@@ -42,7 +42,7 @@ Set these **repository variables** under Settings → Secrets and variables → 
 | `STARS_DEPLOY_HOST`     | `138.2.168.194`                                                      |
 | `STARS_DEPLOY_USER`     | `ubuntu`                                                             |
 | `STARS_KNOWN_HOSTS`     | Verified OpenSSH known-hosts line for the server                     |
-| `VITE_GEOAPIFY_API_KEY` | Optional domain-restricted Geoapify browser key for worldwide search |
+| `VITE_GEOAPIFY_API_KEY` | Optional domain-restricted Geoapify browser key for IP city detection and worldwide search |
 
 The CI build embeds `VITE_GEOAPIFY_API_KEY` into the static bundle. This is a
 browser-visible key, so restrict allowed origins/referrers in Geoapify to the

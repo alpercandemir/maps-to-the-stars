@@ -119,13 +119,6 @@ export interface Place {
 // Bundled city suggestions remain available when worldwide search is unavailable.
 export const CITIES: Place[] = [
   {
-    label: "Kadıköy, Istanbul",
-    country: "Türkiye",
-    lat: 40.9909,
-    lon: 29.0297,
-    zone: "Europe/Istanbul",
-  },
-  {
     label: "Istanbul",
     country: "Türkiye",
     lat: 41.0082,

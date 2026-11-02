@@ -1,5 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.route("https://api.geoapify.com/v1/ipinfo?**", (route) =>
+    route.abort(),
+  );
+});
+
 async function openSearch(page: Page) {
   await page.goto("/");
   await page.locator(".place-control").click();
@@ -31,7 +37,7 @@ test("GPS coordinates use the returned place time zone and never guess after loo
         } as GeolocationPosition),
     });
   });
-  await page.route("https://api.geoapify.com/**", (route) =>
+  await page.route("https://api.geoapify.com/v1/geocode/**", (route) =>
     route.fulfill({ json: { results: [tromso] } }),
   );
   await openSearch(page);
@@ -45,8 +51,8 @@ test("GPS coordinates use the returned place time zone and never guess after loo
   await expect(
     page.getByRole("button", { name: "Set location" }),
   ).toBeEnabled();
-  await page.unroute("https://api.geoapify.com/**");
-  await page.route("https://api.geoapify.com/**", (route) =>
+  await page.unroute("https://api.geoapify.com/v1/geocode/**");
+  await page.route("https://api.geoapify.com/v1/geocode/**", (route) =>
     route.fulfill({ status: 503, json: {} }),
   );
   await page
@@ -62,7 +68,7 @@ test("worldwide place selection applies coordinates and time zone and reuses cac
   page,
 }) => {
   let calls = 0;
-  await page.route("https://api.geoapify.com/**", async (route) => {
+  await page.route("https://api.geoapify.com/v1/geocode/**", async (route) => {
     calls++;
     await route.fulfill({ json: { results: [tromso] } });
   });
@@ -83,7 +89,7 @@ test("worldwide place selection applies coordinates and time zone and reuses cac
 test("search failure preserves bundled cities and missing time zones require manual entry", async ({
   page,
 }) => {
-  await page.route("https://api.geoapify.com/**", (route) =>
+  await page.route("https://api.geoapify.com/v1/geocode/**", (route) =>
     route.fulfill({ status: 429, json: {} }),
   );
   const search = await openSearch(page);
@@ -92,10 +98,10 @@ test("search failure preserves bundled cities and missing time zones require man
     "Worldwide search is unavailable",
   );
   await expect(
-    page.getByRole("button", { name: /^Istanbul Türkiye/ }),
+    page.getByRole("dialog").getByRole("button", { name: /^Istanbul Türkiye/ }),
   ).toBeVisible();
-  await page.unroute("https://api.geoapify.com/**");
-  await page.route("https://api.geoapify.com/**", (route) =>
+  await page.unroute("https://api.geoapify.com/v1/geocode/**");
+  await page.route("https://api.geoapify.com/v1/geocode/**", (route) =>
     route.fulfill({ json: { results: [{ ...tromso, timezone: null }] } }),
   );
   await search.fill("Tromso");
@@ -110,7 +116,7 @@ test("search failure preserves bundled cities and missing time zones require man
 test("superseded search responses cannot replace a newer query", async ({
   page,
 }) => {
-  await page.route("https://api.geoapify.com/**", async (route) => {
+  await page.route("https://api.geoapify.com/v1/geocode/**", async (route) => {
     const old =
       new URL(route.request().url()).searchParams.get("text") === "Slow place";
     if (old) await new Promise((resolve) => setTimeout(resolve, 800));

@@ -72,7 +72,14 @@ npm run dev
 
 Open [localhost:5173](http://127.0.0.1:5173). Astronomy, bundled cities and the Sky guide need no API key.
 
-To enable worldwide place search, copy `.env.example` to `.env.local` and set
+New visits use Geoapify to estimate your city from your IP address, without a
+browser location permission prompt. The result is labeled “Approximate location”;
+VPNs and mobile networks can affect accuracy. Your clock starts at the current
+instant in your browser's local time zone. Shared links and skies you select keep
+their own location and time zone. Detection takes at most three seconds; missing
+keys, lookup failures and incomplete results fall back to Istanbul.
+
+To enable automatic city detection and worldwide place search, copy `.env.example` to `.env.local` and set
 `VITE_GEOAPIFY_API_KEY` to a free key from [Geoapify MyProjects](https://myprojects.geoapify.com/).
 Restart Vite after changing it. `.env.local` is ignored by Git. Vite embeds this key
 in the browser bundle: restrict its allowed origins/referrers to your site and

@@ -37,7 +37,7 @@ Solar context uses the same topocentric, unrefracted model. Twilight bands use c
 URL state is `lat`, `lon`, `tz`, `place` and an ISO UTC timestamp `at`. Invalid or out-of-range links fall back to the default moment with a visible notice.
 
 ```text
-/?lat=40.9909&lon=29.0297&tz=Europe%2FIstanbul&place=Kad%C4%B1k%C3%B6y%2C+Istanbul&at=2026-01-15T19%3A00%3A00.000Z
+/?lat=41.0082&lon=28.9784&tz=Europe%2FIstanbul&place=Istanbul&at=2026-01-15T19%3A00%3A00.000Z
 ```
 
 ## Validation
