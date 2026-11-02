@@ -92,6 +92,7 @@ export default function App() {
     commit: (ms: number) => void;
   } | null>(null);
   const shareRef = useRef<HTMLInputElement>(null);
+  const dateEdit = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const skyRef = useRef<HTMLElement>(null);
   const objects = useMemo(() => calculateSky(ms, place), [ms, place]);
   const solar = useMemo(() => solarContext(ms, place), [ms, place]);
@@ -117,6 +118,7 @@ export default function App() {
 
   useEffect(() => {
     setDraft(inputs(ms, place.zone));
+    return () => clearTimeout(dateEdit.current);
   }, [ms, place.zone]);
   useEffect(() => {
     if (!playing) return;
@@ -174,6 +176,7 @@ export default function App() {
   }, [modal, pending]);
 
   function move(next: number, remember = false) {
+    clearTimeout(dateEdit.current);
     if (!inRange(next, place.zone)) {
       setPlaying(false);
       setNotice("Choose a moment between 1900 and 2100.");
@@ -197,19 +200,18 @@ export default function App() {
     }
     move(result.ms, remember);
   }
-  function visit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const values = new FormData(e.currentTarget);
-    handleLocal(
-      parseLocal(
-        String(values.get("date")),
-        String(values.get("time")),
-        place.zone,
-      ),
-      true,
-    );
+  function editLocal(next: typeof draft) {
+    clearTimeout(dateEdit.current);
+    setPlaying(false);
+    setDraft(next);
+    setNotice("");
+    if (!next.date || !next.time) return;
+    dateEdit.current = setTimeout(() => {
+      handleLocal(parseLocal(next.date, next.time, place.zone), true);
+    }, 400);
   }
   function changePlace(p: Place) {
+    clearTimeout(dateEdit.current);
     if (!inRange(ms, p.zone)) {
       setNotice(
         "This moment is outside 1900–2100 in that time zone. Choose another moment first.",
@@ -272,6 +274,7 @@ export default function App() {
     }
   }
   function restoreMoment(moment: SavedMoment | StarterSky) {
+    clearTimeout(dateEdit.current);
     setPlaying(false);
     setPlace({ ...moment.place });
     setMs(moment.ms);
@@ -401,7 +404,7 @@ export default function App() {
                   </button>
                 </div>
               </div>
-              <form onSubmit={visit}>
+              <div className="date-time-controls">
                 <div className="date-time-fields">
                   <label>
                     <span>Date</span>
@@ -414,11 +417,8 @@ export default function App() {
                       min="1900-01-01"
                       max="2100-12-31"
                       value={draft.date}
-                      onInput={(e) =>
-                        setDraft({ ...draft, date: e.currentTarget.value })
-                      }
                       onChange={(e) =>
-                        setDraft({ ...draft, date: e.target.value })
+                        editLocal({ ...draft, date: e.target.value })
                       }
                     />
                   </label>
@@ -431,11 +431,8 @@ export default function App() {
                       type="time"
                       onFocus={() => setPlaying(false)}
                       value={draft.time}
-                      onInput={(e) =>
-                        setDraft({ ...draft, time: e.currentTarget.value })
-                      }
                       onChange={(e) =>
-                        setDraft({ ...draft, time: e.target.value })
+                        editLocal({ ...draft, time: e.target.value })
                       }
                     />
                   </label>
@@ -444,11 +441,7 @@ export default function App() {
                   <span>{place.zone}</span>
                   <span>UTC{local.offset}</span>
                 </div>
-                <button type="submit" className="primary-button">
-                  Update sky
-                  <ArrowRight size={15} />
-                </button>
-              </form>
+              </div>
               <div className="jump-controls" aria-label="Calendar jumps">
                 <div>
                   <span>Day</span>
@@ -985,6 +978,19 @@ function ObjectCard({
   onClose: () => void;
   onJump: (ms: number) => void;
 }) {
+  // Rounded catalogue distances support an approximate year, not an exact date.
+  const lightYear =
+    o.distance && o.distance <= 100
+      ? zoned(ms - o.distance * 365.25 * 24 * HOUR, place.zone).year
+      : undefined;
+  const lightJump =
+    lightYear !== undefined && lightYear >= 1900
+      ? shiftCalendar(
+          ms,
+          place.zone,
+          (lightYear - zoned(ms, place.zone).year) * 12,
+        )
+      : undefined;
   function eventTime(value: number | undefined) {
     if (value === undefined) return "Not in next 48h";
     const day =
@@ -1074,6 +1080,21 @@ function ObjectCard({
           </>
         )}
       </div>
+      {lightYear !== undefined && (
+        <p className="light-travel">
+          Light reaching this sky left {o.name} around{" "}
+          <strong>{lightYear}</strong>.
+          {lightJump?.kind === "ok" && inRange(lightJump.ms, place.zone) && (
+            <button
+              className="event-jump"
+              onClick={() => onJump(lightJump.ms)}
+              title={`Explore the sky in ${lightYear}; this changes the viewing date.`}
+            >
+              Explore {lightYear}
+            </button>
+          )}
+        </p>
+      )}
       <details className="object-notes">
         <summary>About {o.name}</summary>
         <p>{o.description}</p>

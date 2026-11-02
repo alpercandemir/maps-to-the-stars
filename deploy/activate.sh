@@ -27,10 +27,23 @@ case "$release" in
 esac
 test -f "$release/dist/index.html"
 test -L "$app/current" || test ! -e "$app/current"
+previous=""
+if test -L "$app/current"; then previous="$(readlink "$app/current")"; fi
+
+rollback_app() {
+  local status=$?
+  trap - ERR
+  if test -n "$previous" && test "$previous" != "$release"; then
+    echo "Activation failed; restoring $previous" >&2
+    (cd "$previous/deploy" && sudo --preserve-env=STARS_PROXY_NETWORK docker compose up -d --no-build --pull never --wait --wait-timeout 90) || echo 'Automatic rollback failed; inspect the server.' >&2
+  fi
+  exit "$status"
+}
 
 cd "$release/deploy"
 sudo --preserve-env=STARS_PROXY_NETWORK docker compose config --quiet
 sudo --preserve-env=STARS_PROXY_NETWORK docker compose run --rm --no-deps web caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+trap rollback_app ERR
 sudo --preserve-env=STARS_PROXY_NETWORK docker compose up -d --no-build --pull never --wait --wait-timeout 90
 
 backup="$app/backups/$(date -u +%Y%m%dT%H%M%SZ)"
@@ -67,7 +80,9 @@ if ! sudo docker exec "$container" caddy reload --config /tmp/mapstothestars.Cad
   cat "$backup/Caddyfile" > "$proxy"
   sudo docker cp "$backup/Caddyfile" "$container:/tmp/mapstothestars.Caddyfile"
   sudo docker exec "$container" caddy reload --config /tmp/mapstothestars.Caddyfile --adapter caddyfile
-  exit 1
+  false # Trigger restoration of the previous application release too.
 fi
+curl --fail --silent --show-error --retry 4 --retry-delay 2 --max-time 15 "https://$STARS_HOSTNAME/healthz"
 ln -sfn "$release" "$app/current"
+trap - ERR
 printf 'Active release: %s\nProxy backup: %s\n' "$release" "$backup"
