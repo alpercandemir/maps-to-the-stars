@@ -1,0 +1,11 @@
+# Site block appended once to the shared proxy's Caddyfile by activate.sh.
+# {$STARS_HOSTNAME} is substituted with the configured hostname before appending.
+# The shared proxy owns ports 80/443 and automatically manages HTTPS.
+{$STARS_HOSTNAME} {
+	encode zstd gzip
+	log {
+		output stdout
+		format json
+	}
+	reverse_proxy mapstothestars:8080
+}

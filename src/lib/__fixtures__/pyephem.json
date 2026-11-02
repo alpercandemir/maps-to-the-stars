@@ -1,0 +1,302 @@
+{
+  "engine": "PyEphem 4.2.1",
+  "refraction": "pressure=0; geometric centre; elevation=0m",
+  "source": "https://rhodesmill.org/pyephem/",
+  "cases": [
+    {
+      "label": "Istanbul summer 1998",
+      "instant": "1998-07-15T20:30:00Z",
+      "place": {
+        "label": "Istanbul summer 1998",
+        "country": "",
+        "lat": 40.9909,
+        "lon": 29.0297,
+        "zone": "Europe/Istanbul"
+      },
+      "objects": [
+        {
+          "id": "polaris",
+          "altitude": 40.531578799095435,
+          "azimuth": 0.7824349350526023
+        },
+        {
+          "id": "sirius",
+          "altitude": -63.85631964485214,
+          "azimuth": 334.91507478153034
+        },
+        {
+          "id": "vega",
+          "altitude": 82.59985453879536,
+          "azimuth": 104.33036776056856
+        },
+        {
+          "id": "arcturus",
+          "altitude": 37.81067390547789,
+          "azimuth": 262.93479836427076
+        },
+        {
+          "id": "betelgeuse",
+          "altitude": -41.59035374309579,
+          "azimuth": 1.6578247960059642
+        },
+        {
+          "id": "rigel",
+          "altitude": -55.68389926518892,
+          "azimuth": 20.315883714467883
+        },
+        {
+          "id": "aldebaran",
+          "altitude": -29.276403763965735,
+          "azimuth": 23.26910212477778
+        },
+        {
+          "id": "capella",
+          "altitude": -2.4757984326097593,
+          "azimuth": 7.542302131557341
+        },
+        {
+          "id": "moon",
+          "altitude": -9.527677613834554,
+          "azimuth": 79.85710328511753,
+          "fraction": 0.5910134525193038
+        }
+      ]
+    },
+    {
+      "label": "Istanbul winter 2026",
+      "instant": "2026-01-15T20:30:00Z",
+      "place": {
+        "label": "Istanbul winter 2026",
+        "country": "",
+        "lat": 40.9909,
+        "lon": 29.0297,
+        "zone": "Europe/Istanbul"
+      },
+      "objects": [
+        {
+          "id": "polaris",
+          "altitude": 41.42689365587905,
+          "azimuth": 359.4120400134013
+        },
+        {
+          "id": "sirius",
+          "altitude": 31.551956418036355,
+          "azimuth": 169.03253803223507
+        },
+        {
+          "id": "vega",
+          "altitude": -9.901592904852317,
+          "azimuth": 353.9820396232412
+        },
+        {
+          "id": "arcturus",
+          "altitude": -9.676610742460328,
+          "azimuth": 54.077913470549234
+        },
+        {
+          "id": "betelgeuse",
+          "altitude": 56.33571787806157,
+          "azimuth": 184.79929207077916
+        },
+        {
+          "id": "rigel",
+          "altitude": 39.427943172626435,
+          "azimuth": 196.5969138996021
+        },
+        {
+          "id": "aldebaran",
+          "altitude": 58.81874777345509,
+          "azimuth": 225.04450152854346
+        },
+        {
+          "id": "capella",
+          "altitude": 79.85442585096288,
+          "azimuth": 303.8004485458607
+        },
+        {
+          "id": "moon",
+          "altitude": -74.82513216883989,
+          "azimuth": 37.26966145151035,
+          "fraction": 0.08435853333048643
+        }
+      ]
+    },
+    {
+      "label": "Sydney summer 2026",
+      "instant": "2026-01-15T12:30:00Z",
+      "place": {
+        "label": "Sydney summer 2026",
+        "country": "",
+        "lat": -33.8688,
+        "lon": 151.2093,
+        "zone": "Australia/Sydney"
+      },
+      "objects": [
+        {
+          "id": "polaris",
+          "altitude": -33.444557440817285,
+          "azimuth": 359.45498824290235
+        },
+        {
+          "id": "sirius",
+          "altitude": 71.47254747511747,
+          "azimuth": 24.4574184365766
+        },
+        {
+          "id": "vega",
+          "altitude": -83.22536326298513,
+          "azimuth": 318.4291291441406
+        },
+        {
+          "id": "arcturus",
+          "altitude": -35.488119304633834,
+          "azimuth": 89.76653297826878
+        },
+        {
+          "id": "betelgeuse",
+          "altitude": 48.496767824245886,
+          "azimuth": 353.2097091526528
+        },
+        {
+          "id": "rigel",
+          "altitude": 60.937772982316524,
+          "azimuth": 328.79312158693455
+        },
+        {
+          "id": "aldebaran",
+          "altitude": 34.49686419567364,
+          "azimuth": 331.3772007160038
+        },
+        {
+          "id": "capella",
+          "altitude": 9.107574876101872,
+          "azimuth": 350.19051965269705
+        },
+        {
+          "id": "moon",
+          "altitude": -26.92480036858161,
+          "azimuth": 163.40376547684923,
+          "fraction": 0.10286694816466829
+        }
+      ]
+    },
+    {
+      "label": "Istanbul early range",
+      "instant": "1900-01-15T20:30:00Z",
+      "place": {
+        "label": "Istanbul early range",
+        "country": "",
+        "lat": 40.9909,
+        "lon": 29.0297,
+        "zone": "Europe/Istanbul"
+      },
+      "objects": [
+        {
+          "id": "polaris",
+          "altitude": 41.38428010564734,
+          "azimuth": 358.46723360589175
+        },
+        {
+          "id": "sirius",
+          "altitude": 31.847457722287785,
+          "azimuth": 170.0188446691416
+        },
+        {
+          "id": "vega",
+          "altitude": -10.061837680517277,
+          "azimuth": 354.43581007094014
+        },
+        {
+          "id": "arcturus",
+          "altitude": -8.589542593596839,
+          "azimuth": 54.34563639544623
+        },
+        {
+          "id": "betelgeuse",
+          "altitude": 56.21650717138276,
+          "azimuth": 186.98421494475286
+        },
+        {
+          "id": "rigel",
+          "altitude": 39.053682957055585,
+          "azimuth": 197.8462101403108
+        },
+        {
+          "id": "aldebaran",
+          "altitude": 57.888107178284166,
+          "azimuth": 226.77919199280828
+        },
+        {
+          "id": "capella",
+          "altitude": 78.72093546763176,
+          "azimuth": 300.456087399899
+        },
+        {
+          "id": "moon",
+          "altitude": 57.49615677276299,
+          "azimuth": 128.21219932559902,
+          "fraction": 0.9992699467536058
+        }
+      ]
+    },
+    {
+      "label": "Istanbul late range",
+      "instant": "2100-01-15T20:30:00Z",
+      "place": {
+        "label": "Istanbul late range",
+        "country": "",
+        "lat": 40.9909,
+        "lon": 29.0297,
+        "zone": "Europe/Istanbul"
+      },
+      "objects": [
+        {
+          "id": "polaris",
+          "altitude": 41.44613771386556,
+          "azimuth": 359.9703396761581
+        },
+        {
+          "id": "sirius",
+          "altitude": 31.333212779677524,
+          "azimuth": 168.23509978625776
+        },
+        {
+          "id": "vega",
+          "altitude": -9.781326080173086,
+          "azimuth": 353.5581034418368
+        },
+        {
+          "id": "arcturus",
+          "altitude": -10.435296202634296,
+          "azimuth": 53.76266950450188
+        },
+        {
+          "id": "betelgeuse",
+          "altitude": 56.38698527797169,
+          "azimuth": 183.14552568780064
+        },
+        {
+          "id": "rigel",
+          "altitude": 39.67236490716993,
+          "azimuth": 195.59711080889562
+        },
+        {
+          "id": "aldebaran",
+          "altitude": 59.45503453615513,
+          "azimuth": 223.65204452283132
+        },
+        {
+          "id": "capella",
+          "altitude": 80.62582741582413,
+          "azimuth": 306.5402833087629
+        },
+        {
+          "id": "moon",
+          "altitude": -5.070812267653391,
+          "azimuth": 272.9008366652631,
+          "fraction": 0.2616523171531464
+        }
+      ]
+    }
+  ]
+}
