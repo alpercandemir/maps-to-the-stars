@@ -36,12 +36,19 @@ pinned; no `ssh-keyscan` or disabled host-key checks are used.
 
 Set these **repository variables** under Settings → Secrets and variables → Actions:
 
-| Variable            | Current deployment                                       |
-| ------------------- | -------------------------------------------------------- |
-| `DEPLOY_ENABLED`    | `true` to enable deployment after successful main builds |
-| `STARS_DEPLOY_HOST` | `138.2.168.194`                                          |
-| `STARS_DEPLOY_USER` | `ubuntu`                                                 |
-| `STARS_KNOWN_HOSTS` | Verified OpenSSH known-hosts line for the server         |
+| Variable                | Current deployment                                                   |
+| ----------------------- | -------------------------------------------------------------------- |
+| `DEPLOY_ENABLED`        | `true` to enable deployment after successful main builds             |
+| `STARS_DEPLOY_HOST`     | `138.2.168.194`                                                      |
+| `STARS_DEPLOY_USER`     | `ubuntu`                                                             |
+| `STARS_KNOWN_HOSTS`     | Verified OpenSSH known-hosts line for the server                     |
+| `VITE_GEOAPIFY_API_KEY` | Optional domain-restricted Geoapify browser key for worldwide search |
+
+The CI build embeds `VITE_GEOAPIFY_API_KEY` into the static bundle. This is a
+browser-visible key, so restrict allowed origins/referrers in Geoapify to the
+production hostname. Without it, bundled cities and manual coordinates still
+work. A local `.env.local` is not uploaded to GitHub and does not configure CI;
+set the repository variable separately. Changing the key requires a rebuild.
 
 Add `ORACLE_SSH_KEY` as a **production environment secret**, containing the
 deployment user's existing private SSH key. The workflow writes it to a

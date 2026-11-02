@@ -116,7 +116,7 @@ export interface Place {
   lon: number;
   zone: string;
 }
-// Small, hand-curated city gazetteer. No network geocoder or external map tiles.
+// Bundled city suggestions remain available when worldwide search is unavailable.
 export const CITIES: Place[] = [
   {
     label: "Kadıköy, Istanbul",

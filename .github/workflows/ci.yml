@@ -45,6 +45,8 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+        env:
+          VITE_GEOAPIFY_API_KEY: ${{ vars.VITE_GEOAPIFY_API_KEY }}
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - name: Check deployment scripts and configuration

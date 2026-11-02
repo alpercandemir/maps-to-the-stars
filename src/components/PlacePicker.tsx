@@ -1,8 +1,14 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowUpRight, Check, LocateFixed, MapPin, Search } from "lucide-react";
 import { CITIES, type Place } from "../lib/catalog";
 import { validZone } from "../lib/time";
 import Dialog from "./Dialog";
+import {
+  geocodingEnabled,
+  searchPlaces,
+  placeAt,
+  type FoundPlace,
+} from "../lib/geocoding";
 export default function PlacePicker({
   place,
   onSelect,
@@ -20,6 +26,46 @@ export default function PlacePicker({
     [label, setLabel] = useState("My place");
   const [error, setError] = useState(""),
     [locating, setLocating] = useState(false);
+  const [found, setFound] = useState<FoundPlace[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const locationRequest = useRef<AbortController | null>(null);
+  useEffect(
+    () => () => {
+      locationRequest.current?.abort();
+      locationRequest.current = null;
+    },
+    [],
+  );
+  useEffect(() => {
+    setFound([]);
+    setSearchError("");
+    setSearching(false);
+    if (manual || !geocodingEnabled || query.trim().length < 3) return;
+    const controller = new AbortController();
+    setSearching(true);
+    const timer = setTimeout(async () => {
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      try {
+        const places = await searchPlaces(query, controller.signal);
+        if (!controller.signal.aborted) setFound(places);
+      } catch {
+        if (active)
+          setSearchError(
+            "Worldwide search is unavailable. Try again, choose a saved city or enter coordinates.",
+          );
+      } finally {
+        clearTimeout(timeout);
+        if (active) setSearching(false);
+      }
+    }, 400);
+    let active = true;
+    return () => {
+      active = false;
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query, manual]);
   const filtered = CITIES.filter((p) =>
     `${p.label} ${p.country}`
       .normalize("NFD")
@@ -32,6 +78,28 @@ export default function PlacePicker({
           .toLowerCase(),
       ),
   );
+  const results = [
+    ...filtered,
+    ...found.filter(
+      (p) =>
+        !filtered.some(
+          (city) =>
+            Math.abs(city.lat - p.lat) < 0.001 &&
+            Math.abs(city.lon - p.lon) < 0.001,
+        ),
+    ),
+  ];
+  function choose(p: FoundPlace) {
+    if (p.zone) return onSelect({ ...p, zone: p.zone });
+    setLat(String(p.lat));
+    setLon(String(p.lon));
+    setLabel(p.label);
+    setZone("");
+    setManual(true);
+    setError(
+      "This place has no time zone. Enter its IANA time zone to continue.",
+    );
+  }
   function submit(e: FormEvent) {
     e.preventDefault();
     if (
@@ -62,15 +130,37 @@ export default function PlacePicker({
         "Your browser does not support location. Enter coordinates instead.",
       );
     setLocating(true);
+    const controller = new AbortController();
+    locationRequest.current?.abort();
+    locationRequest.current = controller;
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
+        if (controller.signal.aborted) return;
         setLat(pos.coords.latitude.toFixed(6));
         setLon(pos.coords.longitude.toFixed(6));
         setLabel("My location");
+        setZone("");
         setManual(true);
-        setLocating(false);
+        if (geocodingEnabled) {
+          const timeout = setTimeout(() => controller.abort(), 8000);
+          try {
+            const result = await placeAt(
+              pos.coords.latitude,
+              pos.coords.longitude,
+              controller.signal,
+            );
+            if (!controller.signal.aborted && result?.zone)
+              setZone(result.zone);
+          } catch {
+            /* Coordinates remain usable when reverse lookup is unavailable. */
+          } finally {
+            clearTimeout(timeout);
+          }
+        }
+        if (locationRequest.current === controller) setLocating(false);
       },
       () => {
+        if (controller.signal.aborted) return;
         setLocating(false);
         setError(
           "Location was unavailable or permission was denied. You can enter coordinates instead.",
@@ -86,7 +176,7 @@ export default function PlacePicker({
           className={!manual ? "active" : ""}
           onClick={() => setManual(false)}
         >
-          Find a city
+          Find a place
         </button>
         <button
           className={manual ? "active" : ""}
@@ -101,15 +191,19 @@ export default function PlacePicker({
             <Search size={17} />
             <input
               autoFocus
-              aria-label="Search cities"
-              placeholder="Search cities…"
+              aria-label="Search places"
+              placeholder={
+                geocodingEnabled
+                  ? "Search cities, districts or addresses…"
+                  : "Search saved cities…"
+              }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </label>
           <div className="city-list">
-            {filtered.map((p) => (
-              <button key={p.label} onClick={() => onSelect(p)}>
+            {results.map((p, i) => (
+              <button key={`${p.label}-${i}`} onClick={() => choose(p)}>
                 <MapPin size={17} />
                 <span>
                   {p.label}
@@ -122,12 +216,38 @@ export default function PlacePicker({
                 )}
               </button>
             ))}
-            {filtered.length === 0 && (
+            {results.length === 0 && !searching && !searchError && (
               <p className="empty">
-                No city found. Use exact coordinates for any other place.
+                No place found. Try a different name or enter coordinates.
               </p>
             )}
           </div>
+          <p className="field-note" role="status">
+            {searching
+              ? "Searching worldwide…"
+              : searchError ||
+                (!geocodingEnabled
+                  ? "Worldwide search is unavailable. Saved cities and coordinates still work."
+                  : query.trim().length < 3
+                    ? "Type at least 3 characters to search worldwide."
+                    : "")}
+          </p>
+          {geocodingEnabled && (
+            <p className="field-note geocoding-credit">
+              Search text is sent to{" "}
+              <a
+                href="https://www.geoapify.com/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Geoapify
+              </a>
+              . Powered by <a href="https://www.geoapify.com/">Geoapify</a> ·{" "}
+              <a href="https://www.openstreetmap.org/copyright">
+                © OpenStreetMap contributors
+              </a>
+            </p>
+          )}
         </>
       ) : (
         <form onSubmit={submit} className="coordinate-form">
@@ -170,6 +290,7 @@ export default function PlacePicker({
             <input
               required
               value={zone}
+              disabled={locating}
               onChange={(e) => setZone(e.target.value)}
               placeholder="Europe/Istanbul"
               list="zones"
@@ -185,7 +306,7 @@ export default function PlacePicker({
             Choose the time zone for these coordinates. Coordinates alone do not
             determine historical clock rules.
           </p>
-          <button className="primary-button" type="submit">
+          <button className="primary-button" type="submit" disabled={locating}>
             Set location <ArrowUpRight size={16} />
           </button>
         </form>

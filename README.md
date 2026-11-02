@@ -25,13 +25,14 @@ https://github.com/user-attachments/assets/9d3807ea-616a-41bf-82ae-90a45738bb18
 
 ## What you can do
 
-- **Find your sky.** Choose one of 16 cities or enter coordinates and an IANA time zone. Date and time edits update automatically after a brief pause.
+- **Find your sky.** Search worldwide cities, districts and addresses with Geoapify, including their time zones. Sixteen bundled cities and manual coordinates work offline. Date and time edits update automatically after a brief pause.
+- **Point at the sky.** Open the optional Sky guide for the current sky. Follow your phone’s direction, turn on a camera overlay, or use manual direction controls. Your historical map stays unchanged.
 - **Move through time.** Step by day or month, scrub a 24-hour window, or play in either direction. Historical DST gaps are rejected; repeated hours offer an explicit choice.
 - **Follow the light.** Select stars for altitude, azimuth and the next rise, set or highest point. Nearby stars also show the approximate year their light left, with an option to explore that year's sky when it is in range.
 - **See motion and daylight.** Trace the previous two hours of stellar motion, with calculated daylight and twilight changing the sky tint.
 - **Keep a moment.** Save up to 50 named skies on your device. Share the exact instant and location in a URL, or export a card as self-contained SVG or 1600 × 2240 PNG, including Turkish characters.
 
-No accounts, API keys, analytics, database or application backend. Calculations run locally. Saved Moments stay in browser storage; a shared URL includes the selected coordinates and time. “Use my location” requests geolocation only when pressed.
+No visitor accounts, analytics, database or application backend. Astronomy calculations run locally. Saved Moments stay in browser storage; a shared URL includes the selected coordinates and time. Worldwide search sends entered text to Geoapify using a site-owner API key. The location picker optionally reverse-geocodes requested GPS coordinates to find their time zone. “Use my location”, motion tracking and camera access request permission only when pressed. Camera images stay on the device.
 
 ## Gallery
 
@@ -69,7 +70,33 @@ npm ci
 npm run dev
 ```
 
-Open [localhost:5173](http://127.0.0.1:5173). No environment variables are needed.
+Open [localhost:5173](http://127.0.0.1:5173). Astronomy, bundled cities and the Sky guide need no API key.
+
+To enable worldwide place search, copy `.env.example` to `.env.local` and set
+`VITE_GEOAPIFY_API_KEY` to a free key from [Geoapify MyProjects](https://myprojects.geoapify.com/).
+Restart Vite after changing it. `.env.local` is ignored by Git. Vite embeds this key
+in the browser bundle: restrict its allowed origins/referrers to your site and
+development URLs (both `http://localhost:5173` and `http://127.0.0.1:5173` if used).
+Never put a private server credential in a `VITE_` variable. Production builds
+need the variable at build time; see [deployment](deploy/README.md).
+
+Search begins after three characters and a 400 ms pause, cancels superseded
+requests and caches up to 100 queries in memory for a day. Requests time out
+after eight seconds. Missing time zones require manual entry rather than a
+guessed offset. Without a key, or during an outage, bundled cities and manual
+coordinates remain available. Geoapify and OpenStreetMap attribution appear in
+the picker.
+
+The Sky guide is a separate, live-only view of the eight catalogue stars and
+the Moon. It initially uses the map’s location; “Use my location” affects only
+the guide. Absolute compass data is required for phone tracking; unsupported,
+denied or stale readings fall back to manual controls. HTTPS (or localhost) is
+needed for camera and motion access. Camera access is optional and requests no
+audio. Closing the guide or hiding the tab stops camera tracks and motion
+tracking. Direction correction and field of view are adjustable under “Adjust
+alignment”; compass drift, magnetic north and unknown camera optics limit
+alignment. This is a calculated guide, not visual star recognition. Real-phone
+checks on iOS Safari and Android Chrome are needed to assess hardware accuracy.
 
 | Command             | Purpose                                                |
 | ------------------- | ------------------------------------------------------ |

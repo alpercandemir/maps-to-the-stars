@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import {
   ArrowDown,
   ArrowLeft,
@@ -10,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
+  Compass,
   Copy,
   Download,
   Eye,
@@ -54,6 +63,7 @@ import MomentsShelf, { SkyStamp } from "./components/MomentsShelf";
 import SkyMap from "./components/SkyMap";
 import Dialog from "./components/Dialog";
 import PlacePicker from "./components/PlacePicker";
+const SkyGuide = lazy(() => import("./components/SkyGuide"));
 
 const initial = readMoment(window.location.search);
 const initialShelf = readSavedMoments();
@@ -71,7 +81,7 @@ export default function App() {
     [labels, setLabels] = useState(true);
   const [trailsEnabled, setTrailsEnabled] = useState(false);
   const [modal, setModal] = useState<
-    "place" | "about" | "share" | "objects" | "save" | null
+    "place" | "about" | "share" | "objects" | "save" | "guide" | null
   >(null);
   const [notice, setNotice] = useState(
       initial.warning || initialShelf.warning || "",
@@ -576,6 +586,12 @@ export default function App() {
                 solar={solar}
               />
             </div>
+            <button
+              className="sky-guide-button"
+              onClick={() => openModal("guide")}
+            >
+              <Compass size={15} /> Sky guide <span>Live</span>
+            </button>
             <p className="visibility-note">
               {solar.band === "day"
                 ? "Daylight can hide these stars. The map shows their calculated positions."
@@ -717,6 +733,17 @@ export default function App() {
           onUndo={undoRemove}
         />
       </main>
+      {modal === "guide" && (
+        <Suspense
+          fallback={
+            <Dialog title="Sky guide" onClose={() => setModal(null)}>
+              <p className="dialog-intro">Opening live sky…</p>
+            </Dialog>
+          }
+        >
+          <SkyGuide place={place} onClose={() => setModal(null)} />
+        </Suspense>
+      )}
       {modal === "place" && (
         <PlacePicker
           place={place}

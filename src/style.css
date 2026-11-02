@@ -300,7 +300,7 @@ input[type="time"] {
 }
 .sky-section {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
   min-width: 0;
   min-height: 0;
 }
@@ -876,6 +876,8 @@ dialog::backdrop {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .city-list small {
   font-size: 10px;
@@ -886,6 +888,230 @@ dialog::backdrop {
   line-height: 1.8;
   color: #8999ac;
   margin: 15px 0 0;
+}
+.geocoding-credit a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sky-guide-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px auto 0;
+  padding: 9px 14px;
+  border: 1px solid #8b9db32b;
+  border-radius: 20px;
+  font-size: 11px;
+  color: #cbbc9d;
+}
+.sky-guide-button:hover {
+  background: #ffffff08;
+}
+.sky-guide-button span {
+  font-size: 9px;
+  color: #8fa5ab;
+}
+.guide-intro {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #9eafc2;
+  margin: 0 0 16px;
+}
+.guide-place {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  font-size: 10px;
+  margin-bottom: 12px;
+}
+.guide-place > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #b8c6d4;
+}
+.guide-place i {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #a5c3b1;
+  margin-right: 4px;
+}
+.guide-place button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #cbbc9d;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.guide-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  height: clamp(230px, 42dvh, 400px);
+  border-radius: 8px;
+  border: 1px solid #6b7d9233;
+  background: radial-gradient(
+    ellipse at 40% 20%,
+    #24374a 0%,
+    #0d1929 55%,
+    #07101b 100%
+  );
+}
+.guide-stage video,
+.guide-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.guide-stage video {
+  object-fit: cover;
+}
+.guide-overlay {
+  pointer-events: none;
+}
+.guide-crosshair {
+  stroke: #e7e2d677;
+  stroke-width: 0.25;
+  fill: none;
+}
+.guide-star {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: #e9e5db;
+}
+.guide-star span {
+  position: absolute;
+  top: 28px;
+  font-size: 11px;
+  text-shadow:
+    0 1px 4px #000,
+    0 0 5px #000;
+  padding: 2px 4px;
+  white-space: nowrap;
+}
+.guide-star.selected span {
+  color: #f5dcab;
+}
+.guide-bearing {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: #07101bbf;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.guide-bearing span {
+  color: #a3b4c6;
+}
+.guide-mode {
+  position: absolute;
+  top: 17px;
+  right: 12px;
+  font-size: 9px;
+  color: #a3b4c6;
+  pointer-events: none;
+}
+.guide-aim {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  margin: 0;
+  text-align: center;
+  padding: 9px;
+  font-size: 11px;
+  line-height: 1.6;
+  background: #07101bd9;
+  border-radius: 4px;
+  pointer-events: none;
+}
+.guide-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.guide-actions button {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #6b7d9244;
+  border-radius: 5px;
+  padding: 11px 8px;
+  color: #cbbc9d;
+  font-size: 11px;
+}
+.guide-actions button[aria-pressed="true"] {
+  background: #2b3b4b;
+}
+.guide-target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  color: #9eafc2;
+  margin-top: 16px;
+}
+.guide-target select {
+  background: #0b1421;
+  border: 1px solid #6b7d9244;
+  border-radius: 4px;
+  padding: 9px;
+  max-width: 65%;
+  color: #d2dae4;
+  font: inherit;
+}
+.guide-manual {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+.guide-manual label,
+.guide-adjust label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #9eafc2;
+  font-size: 10px;
+}
+.guide-manual input,
+.guide-adjust input {
+  width: 100%;
+  accent-color: #cbbc9d;
+}
+.guide-manual > button {
+  justify-self: start;
+  color: #cbbc9d;
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.guide-adjust {
+  margin-top: 18px;
+  border-top: 1px solid #6b7d922a;
+  padding-top: 15px;
+}
+.guide-adjust summary {
+  color: #aebed0;
+  font-size: 11px;
+  cursor: pointer;
+}
+.guide-adjust label {
+  margin-top: 14px;
 }
 .empty {
   font-size: 12px;
