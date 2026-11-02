@@ -6,6 +6,8 @@
 
 Explore eight bright stars and the Moon from 1900 to 2100. Real astronomical calculations, historical time zones, and a quiet interface—all in your browser.
 
+**App URL:** [https://tothestars.138.2.168.194.sslip.io/](https://tothestars.138.2.168.194.sslip.io/)
+
 [![CI](https://github.com/alpercandemir/maps-to-the-stars/actions/workflows/ci.yml/badge.svg)](https://github.com/alpercandemir/maps-to-the-stars/actions/workflows/ci.yml)
 ![React 19](https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)
