@@ -202,7 +202,16 @@ export function embeddedFonts() {
       const bytes = new Uint8Array(await response.arrayBuffer());
       let data = "";
       for (const byte of bytes) data += String.fromCharCode(byte);
-      return `@font-face{font-family:'${family}';font-style:normal;font-weight:${weight};unicode-range:${range};src:url(data:font/woff2;base64,${btoa(data)}) format('woff2')}`;
+      const source = `url(data:font/woff2;base64,${btoa(data)}) format('woff2')`;
+      // SVG image.decode() can finish before embedded fonts have decoded.
+      // Warm the same font sources before rasterizing to avoid blank text runs.
+      const font = new FontFace(family, source, {
+        weight,
+        unicodeRange: range,
+      });
+      await font.load();
+      document.fonts.add(font);
+      return `@font-face{font-family:'${family}';font-style:normal;font-weight:${weight};unicode-range:${range};src:${source}}`;
     }),
   )
     .then((rules) => rules.join(""))

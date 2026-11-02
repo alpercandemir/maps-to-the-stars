@@ -74,14 +74,8 @@ test("downloaded cards carry both font subsets and render Turkish text to PNG", 
 }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Share", exact: true }).click();
-  await page.getByLabel("Card title").fill("İzmir ışığı · ğüşöç");
-  const svgEvent = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Download SVG" }).click();
-  const svg = await readFile((await (await svgEvent).path())!, "utf8");
-  expect(svg).toContain("İzmir ışığı · ğüşöç");
-  expect(svg.match(/@font-face/g)).toHaveLength(4);
-  expect(svg.match(/unicode-range:U\+0100-02BA/g)).toHaveLength(2);
-  expect(svg.match(/data:font\/woff2;base64,/g)).toHaveLength(4);
+  await page.getByLabel("Card title").fill("Işığın yolculuğu · İzmir");
+  // Export PNG first: an SVG download must not warm the font cache for this check.
   const pngEvent = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download PNG" }).click();
   const png = await readFile((await (await pngEvent).path())!);
@@ -91,4 +85,30 @@ test("downloaded cards carry both font subsets and render Turkish text to PNG", 
   await expect(page.getByRole("status")).toContainText(
     "PNG sky card downloaded",
   );
+  const titlePixels = await page.evaluate(async (base64) => {
+    const image = new Image();
+    image.src = `data:image/png;base64,${base64}`;
+    await image.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(image, 0, 0);
+    const pixels = ctx.getImageData(0, 1540, 1600, 180).data;
+    let ink = 0;
+    for (let i = 0; i < pixels.length; i += 4)
+      if (pixels[i] > 100 && pixels[i + 1] > 100) ink++;
+    return ink;
+  }, png.toString("base64"));
+  expect(
+    titlePixels,
+    "the first PNG must contain visible title glyphs",
+  ).toBeGreaterThan(500);
+  const svgEvent = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download SVG" }).click();
+  const svg = await readFile((await (await svgEvent).path())!, "utf8");
+  expect(svg).toContain("Işığın yolculuğu · İzmir");
+  expect(svg.match(/@font-face/g)).toHaveLength(4);
+  expect(svg.match(/unicode-range:U\+0100-02BA/g)).toHaveLength(2);
+  expect(svg.match(/data:font\/woff2;base64,/g)).toHaveLength(4);
 });
